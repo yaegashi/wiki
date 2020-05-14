@@ -1,42 +1,36 @@
 const webpack = require('webpack')
 const path = require('path')
 const fs = require('fs-extra')
+const yargs = require('yargs').argv
+const _ = require('lodash')
 
 const { VueLoaderPlugin } = require('vue-loader')
-const { CleanWebpackPlugin } = require('clean-webpack-plugin')
-const CopyWebpackPlugin = require('copy-webpack-plugin')
-const HtmlWebpackPlugin = require('html-webpack-plugin')
-const HtmlWebpackPugPlugin = require('html-webpack-pug-plugin')
-const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const MomentTimezoneDataPlugin = require('moment-timezone-data-webpack-plugin')
-const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin')
-const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin')
 const VuetifyLoaderPlugin = require('vuetify-loader/lib/plugin')
+const WriteFilePlugin = require('write-file-webpack-plugin')
 const WebpackBarPlugin = require('webpackbar')
-// const SriWebpackPlugin = require('webpack-subresource-integrity')
 
 const babelConfig = fs.readJsonSync(path.join(process.cwd(), '.babelrc'))
-const cacheDir = '.webpack-cache/cache'
-const babelDir = path.join(process.cwd(), '.webpack-cache/babel')
+const cacheDir = '.webpack-cache/cache-theme'
+const babelDir = path.join(process.cwd(), '.webpack-cache/babel-theme')
 
 process.noDeprecation = true
 
-fs.emptyDirSync(path.join(process.cwd(), 'assets'))
+const theme = _.defaultTo(yargs.theme, 'default')
+
+fs.emptyDirSync(path.join(process.cwd(), `assets/themes/${theme}`))
 
 module.exports = {
-  mode: 'production',
-  entry: {
-    app: './client/index-app.js',
-    legacy: './client/index-legacy.js',
-    setup: './client/index-setup.js'
-  },
+  mode: 'development',
+  entry: `./client/themes/${theme}/index.js`,
   output: {
-    path: path.join(process.cwd(), 'assets'),
-    publicPath: '/',
-    filename: 'js/[name].[hash].js',
-    chunkFilename: 'js/[name].[chunkhash].js',
+    path: path.join(process.cwd(), `assets/themes/${theme}`),
+    publicPath: `/themes/${theme}/`,
+    filename: 'theme.js',
+    chunkFilename: '[name].[chunkhash].js',
     globalObject: 'this',
-    crossOriginLoading: 'use-credentials'
+    crossOriginLoading: 'use-credentials',
+    pathinfo: true
   },
   module: {
     rules: [
@@ -65,7 +59,6 @@ module.exports = {
         test: /\.css$/,
         use: [
           'style-loader',
-          MiniCssExtractPlugin.loader,
           'css-loader',
           'postcss-loader'
         ]
@@ -101,7 +94,6 @@ module.exports = {
             }
           },
           'style-loader',
-          MiniCssExtractPlugin.loader,
           'css-loader',
           'postcss-loader',
           {
@@ -163,88 +155,35 @@ module.exports = {
           { loader: 'graphql-persisted-document-loader' },
           { loader: 'graphql-tag/loader' }
         ]
-      },
-      {
-        test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
-        exclude: [
-          path.join(process.cwd(), 'client')
-        ],
-        use: [{
-          loader: 'file-loader',
-          options: {
-            name: '[name].[ext]',
-            outputPath: 'fonts/'
-          }
-        }]
       }
     ]
   },
   plugins: [
     new VueLoaderPlugin(),
     new VuetifyLoaderPlugin(),
-    new webpack.BannerPlugin('Wiki.js - wiki.js.org - Licensed under AGPL'),
     new MomentTimezoneDataPlugin({
       startYear: 2017,
       endYear: (new Date().getFullYear()) + 5
     }),
-    new CopyWebpackPlugin([
-      { from: 'client/static' },
-      { from: './node_modules/prismjs/components', to: 'js/prism' }
-    ], {}),
-    new MiniCssExtractPlugin({
-      filename: 'css/bundle.[hash].css',
-      chunkFilename: 'css/[name].[chunkhash].css'
-    }),
-    new HtmlWebpackPlugin({
-      template: 'dev/templates/master.pug',
-      filename: '../server/views/master.pug',
-      hash: false,
-      inject: false,
-      excludeChunks: ['setup', 'legacy', 'theme']
-    }),
-    new HtmlWebpackPlugin({
-      template: 'dev/templates/legacy.pug',
-      filename: '../server/views/legacy/master.pug',
-      hash: false,
-      inject: false,
-      excludeChunks: ['setup', 'app', 'theme']
-    }),
-    new HtmlWebpackPlugin({
-      template: 'dev/templates/setup.pug',
-      filename: '../server/views/setup.pug',
-      hash: false,
-      inject: false,
-      excludeChunks: ['app', 'legacy', 'theme']
-    }),
-    new HtmlWebpackPugPlugin(),
-    new ScriptExtHtmlWebpackPlugin({
-      sync: 'runtime.js',
-      defaultAttribute: 'async'
-    }),
-    // new SriWebpackPlugin({
-    //   hashFuncNames: ['sha256', 'sha512'],
-    //   enabled: true
-    // }),
     new WebpackBarPlugin({
-      name: 'Client Assets'
-    }),
-    new CleanWebpackPlugin(),
-    new OptimizeCssAssetsPlugin({
-      cssProcessorOptions: { discardComments: { removeAll: true } },
-      canPrint: true
+      name: 'Theme Assets'
     }),
     new webpack.DefinePlugin({
-      'process.env.NODE_ENV': JSON.stringify('production')
-    })
+      'process.env.NODE_ENV': JSON.stringify('development')
+    }),
+    new webpack.optimize.LimitChunkCountPlugin({
+      maxChunks: 1
+    }),
+    new WriteFilePlugin(),
+    new webpack.HotModuleReplacementPlugin(),
+    new webpack.WatchIgnorePlugin([
+      /node_modules/
+    ])
   ],
   optimization: {
     namedModules: true,
     namedChunks: true,
-    splitChunks: {
-      name: 'vendor',
-      minChunks: 2
-    },
-    runtimeChunk: 'single'
+    runtimeChunk: false
   },
   resolve: {
     mainFields: ['browser', 'main', 'module'],
@@ -274,5 +213,6 @@ module.exports = {
     children: false,
     entrypoints: false
   },
-  target: 'web'
+  target: 'web',
+  watch: true
 }

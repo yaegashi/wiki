@@ -9,6 +9,7 @@
     "start": "node server",
     "dev": "node dev",
     "build": "webpack --profile --config dev/webpack/webpack.prod.js",
+    "build:theme": "webpack --profile --config dev/webpack/theme/webpack.prod.js",
     "watch": "webpack --config dev/webpack/webpack.dev.js",
     "test": "eslint --format codeframe --ext .js,.vue . && pug-lint server/views && jest"
   },

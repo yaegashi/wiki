@@ -131,6 +131,7 @@ module.exports = async () => {
   if (global.DEV) {
     app.use(global.WP_DEV.devMiddleware)
     app.use(global.WP_DEV.hotMiddleware)
+    app.use(global.WPTHEME_DEV.devMiddleware)
   }
 
   // ----------------------------------------

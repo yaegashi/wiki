@@ -49,7 +49,7 @@
 </template>
 
 <script>
-import _ from 'lodash'
+import { get as _get, find, findIndex, take, union, last, filter } from 'lodash'
 import gql from 'graphql-tag'
 import { get } from 'vuex-pathify'
 
@@ -111,9 +111,9 @@ export default {
       if (item.id === 0) {
         this.parents = []
       } else {
-        const flushRightIndex = _.findIndex(this.parents, ['id', item.id])
+        const flushRightIndex = findIndex(this.parents, ['id', item.id])
         if (flushRightIndex >= 0) {
-          this.parents = _.take(this.parents, flushRightIndex)
+          this.parents = take(this.parents, flushRightIndex)
         }
         if (this.parents.length < 1) {
           this.parents.push(this.currentParent)
@@ -144,8 +144,8 @@ export default {
           locale: this.locale
         }
       })
-      this.loadedCache = _.union(this.loadedCache, [item.id])
-      this.currentItems = _.get(resp, 'data.pages.tree', [])
+      this.loadedCache = union(this.loadedCache, [item.id])
+      this.currentItems = _get(resp, 'data.pages.tree', [])
       this.$store.commit(`loadingStop`, 'browse-load')
     },
     async loadFromCurrentPath() {
@@ -171,8 +171,8 @@ export default {
           locale: this.locale
         }
       })
-      const items = _.get(resp, 'data.pages.tree', [])
-      const curPage = _.find(items, ['pageId', this.$store.get('page/id')])
+      const items = _get(resp, 'data.pages.tree', [])
+      const curPage = find(items, ['pageId', this.$store.get('page/id')])
       if (!curPage) {
         console.warn('Could not find current page in page tree listing!')
         return
@@ -181,7 +181,7 @@ export default {
       let curParentId = curPage.parent
       let invertedAncestors = []
       while (curParentId) {
-        const curParent = _.find(items, ['id', curParentId])
+        const curParent = find(items, ['id', curParentId])
         if (!curParent) {
           break
         }
@@ -190,10 +190,10 @@ export default {
       }
 
       this.parents = [this.currentParent, ...invertedAncestors.reverse()]
-      this.currentParent = _.last(this.parents)
+      this.currentParent = last(this.parents)
 
       this.loadedCache = [curPage.parent]
-      this.currentItems = _.filter(items, ['parent', curPage.parent])
+      this.currentItems = filter(items, ['parent', curPage.parent])
       this.$store.commit(`loadingStop`, 'browse-load')
     },
     goHome () {

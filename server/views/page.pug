@@ -1,6 +1,7 @@
 extends master.pug
 
 block head
+  script(type='text/javascript', src='/themes/default/theme.js')
   if injectCode.css
     style(type='text/css')!= injectCode.css
   if injectCode.head

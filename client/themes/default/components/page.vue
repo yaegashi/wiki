@@ -254,7 +254,7 @@ import NavSidebar from './nav-sidebar.vue'
 import Prism from 'prismjs'
 import mermaid from 'mermaid'
 import { get } from 'vuex-pathify'
-import _ from 'lodash'
+import { get as _get, reduce, last, debounce } from 'lodash'
 import ClipboardJS from 'clipboard'
 import Vue from 'vue'
 
@@ -401,9 +401,9 @@ export default {
       }
     },
     breadcrumbs() {
-      return [{ path: '/', name: 'Home' }].concat(_.reduce(this.path.split('/'), (result, value, key) => {
+      return [{ path: '/', name: 'Home' }].concat(reduce(this.path.split('/'), (result, value, key) => {
         result.push({
-          path: _.get(_.last(result), 'path', `/${this.locale}`) + `/${value}`,
+          path: _get(last(result), 'path', `/${this.locale}`) + `/${value}`,
           name: value
         })
         return result
@@ -446,7 +446,7 @@ export default {
 
     // -> Check side navigation visibility
     this.handleSideNavVisibility()
-    window.addEventListener('resize', _.debounce(() => {
+    window.addEventListener('resize', debounce(() => {
       this.handleSideNavVisibility()
     }, 500))
 

@@ -1,8 +1,6 @@
 const webpack = require('webpack')
 const path = require('path')
 const fs = require('fs-extra')
-const yargs = require('yargs').argv
-const _ = require('lodash')
 
 const { VueLoaderPlugin } = require('vue-loader')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
@@ -193,21 +191,21 @@ module.exports = {
       filename: '../server/views/master.pug',
       hash: false,
       inject: false,
-      excludeChunks: ['setup', 'legacy']
+      excludeChunks: ['setup', 'legacy', 'theme']
     }),
     new HtmlWebpackPlugin({
       template: 'dev/templates/legacy.pug',
       filename: '../server/views/legacy/master.pug',
       hash: false,
       inject: false,
-      excludeChunks: ['setup', 'app']
+      excludeChunks: ['setup', 'app', 'theme']
     }),
     new HtmlWebpackPlugin({
       template: 'dev/templates/setup.pug',
       filename: '../server/views/setup.pug',
       hash: false,
       inject: false,
-      excludeChunks: ['app', 'legacy']
+      excludeChunks: ['app', 'legacy', 'theme']
     }),
     new HtmlWebpackPugPlugin(),
     new SriWebpackPlugin({
@@ -218,8 +216,7 @@ module.exports = {
       name: 'Client Assets'
     }),
     new webpack.DefinePlugin({
-      'process.env.NODE_ENV': JSON.stringify('development'),
-      'process.env.CURRENT_THEME': JSON.stringify(_.defaultTo(yargs.theme, 'default'))
+      'process.env.NODE_ENV': JSON.stringify('development')
     }),
     new WriteFilePlugin(),
     new webpack.HotModuleReplacementPlugin(),

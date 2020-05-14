@@ -1,7 +1,6 @@
 require('core-js/stable')
 require('regenerator-runtime/runtime')
 
-/* global siteConfig */
 /* eslint-disable no-unused-expressions */
 
 switch (window.document.documentElement.lang) {
@@ -15,10 +14,7 @@ switch (window.document.documentElement.lang) {
 }
 
 require('./scss/app.scss')
-import(/* webpackChunkName: "theme" */ './themes/' + siteConfig.theme + '/scss/app.scss')
-
-import(/* webpackChunkName: "mdi" */ '@mdi/font/css/materialdesignicons.css')
+import('@mdi/font/css/materialdesignicons.css')
 
 require('./helpers/compatibility.js')
 require('./client-app.js')
-import(/* webpackChunkName: "theme" */ './themes/' + siteConfig.theme + '/js/app.js')

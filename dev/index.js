@@ -26,35 +26,44 @@ const init = {
       }),
       hotMiddleware: require('webpack-hot-middleware')(global.WP)
     }
+    global.WPTHEME_CONFIG = require('./webpack/theme/webpack.dev.js')
+    global.WPTHEME = webpack(global.WPTHEME_CONFIG)
+    global.WPTHEME_DEV = {
+      devMiddleware: require('webpack-dev-middleware')(global.WPTHEME, {
+        publicPath: global.WPTHEME_CONFIG.output.publicPath
+      })
+    }
     global.WP_DEV.devMiddleware.waitUntilValid(() => {
-      console.info(chalk.yellow.bold('>>> Starting Wiki.js in DEVELOPER mode...'))
-      require('../server')
+      global.WPTHEME_DEV.devMiddleware.waitUntilValid(() => {
+        console.info(chalk.yellow.bold('>>> Starting Wiki.js in DEVELOPER mode...'))
+        require('../server')
 
-      process.stdin.setEncoding('utf8')
-      process.stdin.on('data', data => {
-        if (_.trim(data) === 'rs') {
-          console.warn(chalk.yellow.bold('--- >>>>>>>>>>>>>>>>>>>>>>>> ---'))
-          console.warn(chalk.yellow.bold('--- Manual restart requested ---'))
-          console.warn(chalk.yellow.bold('--- <<<<<<<<<<<<<<<<<<<<<<<< ---'))
-          this.reload()
-        }
-      })
+        process.stdin.setEncoding('utf8')
+        process.stdin.on('data', data => {
+          if (_.trim(data) === 'rs') {
+            console.warn(chalk.yellow.bold('--- >>>>>>>>>>>>>>>>>>>>>>>> ---'))
+            console.warn(chalk.yellow.bold('--- Manual restart requested ---'))
+            console.warn(chalk.yellow.bold('--- <<<<<<<<<<<<<<<<<<<<<<<< ---'))
+            this.reload()
+          }
+        })
 
-      const devWatcher = chokidar.watch([
-        './server',
-        '!./server/views/master.pug'
-      ], {
-        cwd: process.cwd(),
-        ignoreInitial: true,
-        atomic: 400
-      })
-      devWatcher.on('ready', () => {
-        devWatcher.on('all', _.debounce(() => {
-          console.warn(chalk.yellow.bold('--- >>>>>>>>>>>>>>>>>>>>>>>>>>>> ---'))
-          console.warn(chalk.yellow.bold('--- Changes detected: Restarting ---'))
-          console.warn(chalk.yellow.bold('--- <<<<<<<<<<<<<<<<<<<<<<<<<<<< ---'))
-          this.reload()
-        }, 500))
+        const devWatcher = chokidar.watch([
+          './server',
+          '!./server/views/master.pug'
+        ], {
+          cwd: process.cwd(),
+          ignoreInitial: true,
+          atomic: 400
+        })
+        devWatcher.on('ready', () => {
+          devWatcher.on('all', _.debounce(() => {
+            console.warn(chalk.yellow.bold('--- >>>>>>>>>>>>>>>>>>>>>>>>>>>> ---'))
+            console.warn(chalk.yellow.bold('--- Changes detected: Restarting ---'))
+            console.warn(chalk.yellow.bold('--- <<<<<<<<<<<<<<<<<<<<<<<<<<<< ---'))
+            this.reload()
+          }, 500))
+        })
       })
     })
   },
