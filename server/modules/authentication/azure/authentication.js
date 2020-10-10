@@ -19,7 +19,8 @@ module.exports = {
         responseMode: 'form_post',
         scope: ['profile', 'email', 'openid'],
         allowHttpForRedirectUrl: WIKI.IS_DEBUG,
-        passReqToCallback: true
+        passReqToCallback: true,
+        cookieSameSite: true,
       }, async (req, iss, sub, profile, cb) => {
         const usrEmail = _.get(profile, '_json.email', null) || _.get(profile, '_json.preferred_username')
         try {

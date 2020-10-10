@@ -310,7 +310,8 @@ module.exports = class User extends Model {
       return new Promise((resolve, reject) => {
         WIKI.auth.passport.authenticate(selStrategy.strategyKey, {
           session: !strInfo.useForm,
-          scope: strInfo.scopes ? strInfo.scopes : null
+          scope: strInfo.scopes ? strInfo.scopes : null,
+          prompt: 'select_account',
         }, async (err, user, info) => {
           if (err) { return reject(err) }
           if (!user) { return reject(new WIKI.Error.AuthLoginFailed()) }
